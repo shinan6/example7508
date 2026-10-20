@@ -26,6 +26,35 @@ Choose a model that supports function tools through Chat Completions.
 You can also set `OPENAI_MODEL` instead of passing `--model`.
 The adapter follows the [official function-calling documentation](https://developers.openai.com/api/docs/guides/function-calling).
 
+## Tool-Calling Attack Demo
+
+The offline demo for [issue #1](https://github.com/shinan6/example7508/issues/1)
+simulates a prompt injection in a tool result:
+
+```sh
+python3 attack_demo.py
+```
+
+The user asks for a project status summary. The `read_note` tool returns a note
+containing fake data. An injected instruction tells the model to call `send_data`
+under the pretext of a system verification step.
+
+The command prints tool calls, results, and sink contents for three cases:
+
+| Case | Observed Sink Contents |
+| --- | --- |
+| Clean note, sink registered | Empty |
+| Injected note, sink registered | `DEMO-SECRET-123` |
+| Injected note, sink unavailable | Empty; the agent rejects the unknown tool |
+
+The model is scripted to follow this particular injected instruction. The demo
+exercises real tool dispatch, but does not measure a real LLM's susceptibility.
+The sink stores fake data in memory. No API key, network access, or dependencies
+are needed.
+
+Removing the sink blocks this particular call through the existing tool registry.
+It does not provide a general defense against misuse of tools that remain registered.
+
 ## Add a Tool
 
 Create a `Tool` with a name, description, JSON parameter schema, and Python
